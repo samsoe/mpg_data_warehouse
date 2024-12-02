@@ -7,4 +7,6 @@ dependencies:
   - pandas
   - numpy
   - matplotlib
-  - seaborn 
+  - seaborn
+  - google-cloud-bigquery
+  - db-dtypes 

@@ -1,6 +1,20 @@
 import pandas as pd
 from pathlib import Path
 from google.cloud import bigquery
+import argparse
+
+
+def parse_args():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Upload additional species data to BigQuery"
+    )
+    parser.add_argument(
+        "--table",
+        required=True,
+        help="BigQuery table ID (format: project.dataset.table)",
+    )
+    return parser.parse_args()
 
 
 def load_data():
@@ -26,21 +40,27 @@ def transform_data(df):
         }
     )
 
-    # Convert date format from MM/DD/YYYY to YYYY-MM-DD
-    df_transformed["date"] = pd.to_datetime(df_transformed["date"]).dt.strftime(
-        "%Y-%m-%d"
-    )
+    # Convert date format from MM/DD/YYYY to datetime
+    df_transformed["date"] = pd.to_datetime(
+        df_transformed["date"]
+    )  # Keep as datetime object
 
     # Convert grid_point to integer
     df_transformed["grid_point"] = pd.to_numeric(df_transformed["grid_point"])
 
-    # Handle empty species values
-    df_transformed["key_plant_species"] = pd.to_numeric(
-        df_transformed["key_plant_species"], errors="coerce"
+    # Handle empty species values and convert to integer
+    df_transformed["key_plant_species"] = (
+        df_transformed["key_plant_species"]
+        .replace("", pd.NA)  # Replace empty strings with NA
+        .astype("Int64")  # Convert to nullable integer type
     )
 
     # Take first 8 characters of UUID for survey_ID
     df_transformed["survey_ID"] = df_transformed["survey_ID"].str[:8]
+
+    # Add validation print
+    print("\nColumn types after transformation:")
+    print(df_transformed.dtypes)
 
     return df_transformed
 
@@ -63,10 +83,9 @@ def validate_data(df):
     )
 
 
-def upload_to_bigquery(df):
+def upload_to_bigquery(df, table_id, dry_run=True):
     """Upload the transformed data to BigQuery."""
     client = bigquery.Client()
-    table_id = "mpg-data-warehouse.vegetation_point_intercept_gridVeg.gridVeg_additional_species"
 
     # Configure the load job
     job_config = bigquery.LoadJobConfig(
@@ -80,15 +99,63 @@ def upload_to_bigquery(df):
         ],
     )
 
-    try:
-        job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
-        job.result()  # Wait for the job to complete
-        print(f"\nSuccessfully uploaded {len(df)} rows to BigQuery")
-    except Exception as e:
-        print(f"Error uploading to BigQuery: {e}")
+    if dry_run:
+        # Dry run mode - just validate and show statistics
+        try:
+            # Validate data types match schema
+            schema_types = {
+                "survey_ID": "object",
+                "grid_point": "int64",
+                "date": "object",
+                "year": "int64",
+                "key_plant_species": "Int64",
+            }
+
+            # Check if data types match expected schema
+            current_types = df.dtypes.to_dict()
+            type_matches = all(
+                str(current_types[col]) == dtype for col, dtype in schema_types.items()
+            )
+
+            if type_matches:
+                print(
+                    f"\nDry run successful - {len(df)} rows would be uploaded to {table_id}"
+                )
+                print("Data schema and types are valid")
+
+                # Print some statistics about what would be uploaded
+                print("\nUpload Summary (Dry Run):")
+                print(f"Total rows: {len(df)}")
+                print(f"Unique survey_IDs: {df['survey_ID'].nunique()}")
+                print(f"Date range: {df['date'].min()} to {df['date'].max()}")
+                print("\nSample of data that would be uploaded:")
+                print(df.head())
+            else:
+                print(
+                    "Schema validation failed - data types don't match expected schema"
+                )
+                print("\nExpected types:")
+                for col, dtype in schema_types.items():
+                    print(f"{col}: {dtype}")
+                print("\nActual types:")
+                print(df.dtypes)
+
+        except Exception as e:
+            print(f"Dry run validation failed: {e}")
+    else:
+        # Actual upload
+        try:
+            job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
+            job.result()  # Wait for the job to complete
+            print(f"\nSuccessfully uploaded {len(df)} rows to BigQuery")
+        except Exception as e:
+            print(f"Error uploading to BigQuery: {e}")
 
 
 def main():
+    # Parse command line arguments
+    args = parse_args()
+
     # Load the data
     print("Loading data...")
     df = load_data()
@@ -106,14 +173,18 @@ def main():
         print("\nFirst few rows of transformed data:")
         print(df_transformed.head())
 
-        # Confirm before upload
-        response = input(
-            "\nDo you want to proceed with the upload to BigQuery? (y/n): "
-        )
-        if response.lower() == "y":
-            upload_to_bigquery(df_transformed)
+        # Ask if this is a dry run
+        run_type = input("\nRun in test mode (dry run)? (y/n): ")
+        if run_type.lower() == "y":
+            # Dry run mode
+            upload_to_bigquery(df_transformed, args.table, dry_run=True)
         else:
-            print("Upload cancelled.")
+            # Ask for confirmation before real upload
+            response = input("\nProceed with actual upload to BigQuery? (y/n): ")
+            if response.lower() == "y":
+                upload_to_bigquery(df_transformed, args.table, dry_run=False)
+            else:
+                print("Upload cancelled.")
     else:
         print("Data validation failed. Please check the data before uploading.")
 
