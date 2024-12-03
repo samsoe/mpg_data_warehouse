@@ -198,11 +198,40 @@ def parse_args():
         help="BigQuery table ID (format: project.dataset.table)",
     )
     parser.add_argument(
+        "--backup-bucket",
+        help="GCS bucket for table backup (format: bucket-name)",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Validate and preview the upload without performing it",
     )
     return parser.parse_args()
+
+
+def backup_table(table_id, backup_bucket):
+    """Backup BigQuery table to Cloud Storage."""
+    client = bigquery.Client()
+
+    # Create timestamp for backup file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    table_name = table_id.split(".")[-1]
+    backup_path = f"gs://{backup_bucket}/backups/{table_name}/image_metadata/{timestamp}/backup_*.csv"
+
+    # Configure the extract job
+    job_config = bigquery.ExtractJobConfig()
+    job_config.destination_format = bigquery.DestinationFormat.CSV
+
+    try:
+        # Start extract job
+        extract_job = client.extract_table(table_id, backup_path, job_config=job_config)
+        extract_job.result()  # Wait for job to complete
+
+        print(f"\nBackup created successfully: {backup_path}")
+        return True
+    except Exception as e:
+        print(f"Error creating backup: {e}")
+        return False
 
 
 def main():
@@ -229,10 +258,17 @@ def main():
     print("\nData validation passed!")
     logger.info("Data validation passed!")
 
-    # Upload to BigQuery
-    upload_to_bigquery(
-        df_transformed, args.table_id, dry_run=args.dry_run, logger=logger
-    )
+    # Handle backup and upload
+    if args.dry_run:
+        upload_to_bigquery(df_transformed, args.table_id, dry_run=True, logger=logger)
+    else:
+        if args.backup_bucket:
+            print(f"\nCreating table backup...")
+            if not backup_table(args.table_id, args.backup_bucket):
+                print("Backup failed. Aborting upload.")
+                return
+
+        upload_to_bigquery(df_transformed, args.table_id, dry_run=False, logger=logger)
 
 
 if __name__ == "__main__":
