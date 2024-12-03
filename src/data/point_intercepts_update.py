@@ -287,7 +287,6 @@ def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True, logger=No
     job_config = bigquery.LoadJobConfig(
         write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
         schema=schema,
-        integer_range_validation="RANGE_VALIDATE",
     )
 
     if dry_run:
