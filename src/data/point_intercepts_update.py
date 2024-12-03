@@ -4,6 +4,7 @@ from google.cloud import bigquery
 import argparse
 from datetime import datetime
 import logging
+import sys
 
 
 def setup_logging(table_id, table_type):
@@ -333,9 +334,11 @@ def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True, logger=No
             logger.info(f"Total rows to upload: {len(df)}")
             logger.info(f"Date range: {df['date'].min()} to {df['date'].max()}")
 
-            # Add debug info
-            logger.info(f"survey_ID type: {df['survey_ID'].dtype}")
-            logger.info(f"First few survey_IDs:\n{df['survey_ID'].head()}")
+            # Add debug info for all fields
+            for col in df.columns:
+                logger.info(f"{col} type: {df[col].dtype}")
+                if df[col].dtype in ["int32", "Int32", "int64", "Int64"]:
+                    logger.info(f"First few {col} values:\n{df[col].head()}")
 
             job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
             job.result()
@@ -460,7 +463,7 @@ def main():
 
     if not validate_vegetation_data(df_veg, logger=veg_logger):
         print("Vegetation data validation failed.")
-        return
+        sys.exit(1)  # Force exit on error
 
     print("\nVegetation data validation passed!")
     veg_logger.info("Vegetation data validation passed!")
@@ -494,7 +497,7 @@ def main():
             )
         except Exception as e:
             print(f"Vegetation upload failed: {e}")
-            return
+            sys.exit(1)  # Force exit on error
 
         # Only process ground table if vegetation succeeded
         if not args.skip_ground_table and args.ground_table:
