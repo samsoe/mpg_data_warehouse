@@ -43,6 +43,11 @@ def parse_args():
         "--backup-bucket",
         help="GCS bucket for table backup (format: bucket-name)",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and preview the upload without performing it",
+    )
     return parser.parse_args()
 
 
@@ -246,29 +251,17 @@ def main():
         print("\nFirst few rows of transformed data:")
         print(df_transformed.head())
 
-        # Ask if this is a dry run
-        run_type = input("\nRun in test mode (dry run)? (y/n): ")
-        if run_type.lower() == "y":
-            # Dry run mode
+        if args.dry_run:
             upload_to_bigquery(df_transformed, args.table, dry_run=True)
         else:
             # Create backup if bucket specified
             if args.backup_bucket:
                 print(f"\nCreating backup in bucket: {args.backup_bucket}")
                 if not backup_table(args.table, args.backup_bucket):
-                    response = input(
-                        "\nBackup failed. Continue with upload anyway? (y/n): "
-                    )
-                    if response.lower() != "y":
-                        print("Upload cancelled.")
-                        return
+                    print("Backup failed. Aborting upload.")
+                    return
 
-            # Ask for confirmation before real upload
-            response = input("\nProceed with actual upload to BigQuery? (y/n): ")
-            if response.lower() == "y":
-                upload_to_bigquery(df_transformed, args.table, dry_run=False)
-            else:
-                print("Upload cancelled.")
+            upload_to_bigquery(df_transformed, args.table, dry_run=False)
     else:
         print("Data validation failed. Please check the data before uploading.")
 

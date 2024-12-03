@@ -22,6 +22,13 @@ python src/data/additional_species_update.py \
   --backup-bucket BUCKET_NAME
 ```
 
+Dry run mode (validate without uploading):
+```bash
+python src/data/additional_species_update.py \
+  --table PROJECT.DATASET.TABLE \
+  --dry-run
+```
+
 ## Point Intercepts Data
 
 This project also includes a script for uploading point intercepts data to BigQuery. The data is split into two tables:
@@ -45,6 +52,14 @@ python src/data/point_intercepts_update.py \
   --vegetation-table PROJECT.DATASET.gridVeg_point_intercept_vegetation \
   --ground-table PROJECT.DATASET.gridVeg_point_intercept_ground \
   --backup-bucket BUCKET_NAME
+```
+
+Dry run mode (validate without uploading):
+```bash
+python src/data/point_intercepts_update.py \
+  --vegetation-table PROJECT.DATASET.gridVeg_point_intercept_vegetation \
+  --ground-table PROJECT.DATASET.gridVeg_point_intercept_ground \
+  --dry-run
 ```
 
 Both scripts support:

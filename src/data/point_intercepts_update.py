@@ -56,6 +56,11 @@ def parse_args():
         "--backup-bucket",
         help="GCS bucket for table backup (format: bucket-name)",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and preview the upload without performing it",
+    )
     return parser.parse_args()
 
 
@@ -348,8 +353,8 @@ def main():
     df_veg = transform_vegetation_data(df)
     if validate_vegetation_data(df_veg):
         print("\nVegetation data validation passed!")
-        run_type = input("\nRun vegetation table in test mode (dry run)? (y/n): ")
-        if run_type.lower() == "y":
+
+        if args.dry_run:
             upload_to_bigquery(
                 df_veg,
                 args.vegetation_table,
@@ -363,24 +368,16 @@ def main():
                 if not backup_table(
                     args.vegetation_table, args.backup_bucket, "vegetation"
                 ):
-                    response = input(
-                        "\nBackup failed. Continue with upload anyway? (y/n): "
-                    )
-                    if response.lower() != "y":
-                        print("Vegetation upload cancelled.")
-                        return
+                    print("Backup failed. Aborting upload.")
+                    return
 
-            response = input("\nProceed with vegetation table upload? (y/n): ")
-            if response.lower() == "y":
-                upload_to_bigquery(
-                    df_veg,
-                    args.vegetation_table,
-                    "vegetation",
-                    vegetation_schema,
-                    dry_run=False,
-                )
-            else:
-                print("Vegetation upload cancelled.")
+            upload_to_bigquery(
+                df_veg,
+                args.vegetation_table,
+                "vegetation",
+                vegetation_schema,
+                dry_run=False,
+            )
     else:
         print("Vegetation data validation failed.")
 
@@ -389,29 +386,29 @@ def main():
     df_ground = transform_ground_data(df)
     if validate_ground_data(df_ground):
         print("\nGround cover data validation passed!")
-        run_type = input("\nRun ground cover table in test mode (dry run)? (y/n): ")
-        if run_type.lower() == "y":
+
+        if args.dry_run:
             upload_to_bigquery(
-                df_ground, args.ground_table, "ground", ground_schema, dry_run=True
+                df_ground,
+                args.ground_table,
+                "ground",
+                ground_schema,
+                dry_run=True,
             )
         else:
             if args.backup_bucket:
                 print(f"\nCreating ground cover table backup...")
                 if not backup_table(args.ground_table, args.backup_bucket, "ground"):
-                    response = input(
-                        "\nBackup failed. Continue with upload anyway? (y/n): "
-                    )
-                    if response.lower() != "y":
-                        print("Ground cover upload cancelled.")
-                        return
+                    print("Backup failed. Aborting upload.")
+                    return
 
-            response = input("\nProceed with ground cover table upload? (y/n): ")
-            if response.lower() == "y":
-                upload_to_bigquery(
-                    df_ground, args.ground_table, "ground", ground_schema, dry_run=False
-                )
-            else:
-                print("Ground cover upload cancelled.")
+            upload_to_bigquery(
+                df_ground,
+                args.ground_table,
+                "ground",
+                ground_schema,
+                dry_run=False,
+            )
     else:
         print("Ground cover data validation failed.")
 
