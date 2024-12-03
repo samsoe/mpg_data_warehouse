@@ -37,7 +37,7 @@ The script supports:
 
 2. Activate environment:
    ```bash
-   conda activate species-analysis
+   conda activate gcloud
    ```
 
 ### Logs

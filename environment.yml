@@ -1,4 +1,4 @@
-name: species-analysis
+name: gcloud
 channels:
   - conda-forge
   - defaults
