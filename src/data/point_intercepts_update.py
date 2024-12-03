@@ -103,19 +103,17 @@ def transform_vegetation_data(df):
     # Convert date format
     df_transformed["date"] = pd.to_datetime(df_transformed["date"])
 
-    # Convert numeric fields
-    df_transformed["grid_point"] = pd.to_numeric(df_transformed["grid_point"]).astype(
-        "int32"
-    )
-    df_transformed["year"] = pd.to_numeric(df_transformed["year"]).astype("int32")
+    # Convert numeric fields - use int64 instead of int32
+    df_transformed["grid_point"] = pd.to_numeric(df_transformed["grid_point"])
+    df_transformed["year"] = pd.to_numeric(df_transformed["year"])
     df_transformed["height_intercept_1"] = (
         df_transformed["height_intercept_1"].replace("", pd.NA).astype("float64")
     )
 
-    # Convert intercept columns to nullable integers
+    # Convert intercept columns to nullable integers - use Int64 instead of Int32
     intercept_columns = ["intercept_1", "intercept_2", "intercept_3", "intercept_4"]
     for col in intercept_columns:
-        df_transformed[col] = df_transformed[col].replace("", pd.NA).astype("Int32")
+        df_transformed[col] = df_transformed[col].replace("", pd.NA).astype("Int64")
 
     # Select only the columns needed for the vegetation table
     columns_to_keep = [
@@ -289,6 +287,7 @@ def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True, logger=No
     job_config = bigquery.LoadJobConfig(
         write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
         schema=schema,
+        integer_range_validation="RANGE_VALIDATE",
     )
 
     if dry_run:
