@@ -39,6 +39,10 @@ def parse_args():
         required=True,
         help="BigQuery table ID (format: project.dataset.table)",
     )
+    parser.add_argument(
+        "--backup-bucket",
+        help="GCS bucket for table backup (format: bucket-name)",
+    )
     return parser.parse_args()
 
 
@@ -193,6 +197,31 @@ def upload_to_bigquery(df, table_id, dry_run=True):
             print(f"Error uploading to BigQuery: {e}")
 
 
+def backup_table(table_id, backup_bucket):
+    """Backup BigQuery table to Cloud Storage."""
+    client = bigquery.Client()
+
+    # Create timestamp for backup file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    table_name = table_id.split(".")[-1]
+    backup_path = f"gs://{backup_bucket}/backups/{table_name}/{timestamp}/backup_*.csv"
+
+    # Configure the extract job
+    job_config = bigquery.ExtractJobConfig()
+    job_config.destination_format = bigquery.DestinationFormat.CSV
+
+    try:
+        # Start extract job
+        extract_job = client.extract_table(table_id, backup_path, job_config=job_config)
+        extract_job.result()  # Wait for job to complete
+
+        print(f"\nBackup created successfully: {backup_path}")
+        return True
+    except Exception as e:
+        print(f"Error creating backup: {e}")
+        return False
+
+
 def main():
     # Parse command line arguments
     args = parse_args()
@@ -220,6 +249,17 @@ def main():
             # Dry run mode
             upload_to_bigquery(df_transformed, args.table, dry_run=True)
         else:
+            # Create backup if bucket specified
+            if args.backup_bucket:
+                print(f"\nCreating backup in bucket: {args.backup_bucket}")
+                if not backup_table(args.table, args.backup_bucket):
+                    response = input(
+                        "\nBackup failed. Continue with upload anyway? (y/n): "
+                    )
+                    if response.lower() != "y":
+                        print("Upload cancelled.")
+                        return
+
             # Ask for confirmation before real upload
             response = input("\nProceed with actual upload to BigQuery? (y/n): ")
             if response.lower() == "y":
