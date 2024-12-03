@@ -49,7 +49,7 @@ def parse_args():
     )
     parser.add_argument(
         "--ground-table",
-        required=True,
+        required=False,
         help="BigQuery ground cover table ID (format: project.dataset.table)",
     )
     parser.add_argument(
@@ -60,6 +60,11 @@ def parse_args():
         "--dry-run",
         action="store_true",
         help="Validate and preview the upload without performing it",
+    )
+    parser.add_argument(
+        "--skip-ground-table",
+        action="store_true",
+        help="Skip processing of ground cover table",
     )
     return parser.parse_args()
 
@@ -94,11 +99,17 @@ def transform_vegetation_data(df):
         }
     )
 
+    # Format UUID by removing hyphens
+    df_transformed["survey_ID"] = df_transformed["survey_ID"].str.replace("-", "")
+
     # Convert date format
     df_transformed["date"] = pd.to_datetime(df_transformed["date"])
 
     # Convert numeric fields
-    df_transformed["grid_point"] = pd.to_numeric(df_transformed["grid_point"])
+    df_transformed["grid_point"] = pd.to_numeric(df_transformed["grid_point"]).astype(
+        "int32"
+    )
+    df_transformed["year"] = pd.to_numeric(df_transformed["year"]).astype("int32")
     df_transformed["height_intercept_1"] = (
         df_transformed["height_intercept_1"].replace("", pd.NA).astype("float64")
     )
@@ -106,7 +117,7 @@ def transform_vegetation_data(df):
     # Convert intercept columns to nullable integers
     intercept_columns = ["intercept_1", "intercept_2", "intercept_3", "intercept_4"]
     for col in intercept_columns:
-        df_transformed[col] = df_transformed[col].replace("", pd.NA).astype("Int64")
+        df_transformed[col] = df_transformed[col].replace("", pd.NA).astype("Int32")
 
     # Select only the columns needed for the vegetation table
     columns_to_keep = [
@@ -365,6 +376,48 @@ def backup_table(table_id, backup_bucket, table_type):
         return False
 
 
+def process_ground_table(df, args, ground_schema):
+    """Process and upload ground cover data."""
+    print("\nProcessing ground cover data...")
+    df_ground = transform_ground_data(df)
+    ground_logger = setup_logging(args.ground_table, "ground")
+    ground_logger.info("Starting ground cover data processing")
+    ground_logger.info(f"Mode: {'DRY RUN' if args.dry_run else 'LIVE'}")
+
+    if validate_ground_data(df_ground, logger=ground_logger):
+        print("\nGround cover data validation passed!")
+        ground_logger.info("Ground cover data validation passed!")
+
+        if args.dry_run:
+            upload_to_bigquery(
+                df_ground,
+                args.ground_table,
+                "ground",
+                ground_schema,
+                dry_run=True,
+                logger=ground_logger,
+            )
+        else:
+            if args.backup_bucket:
+                print(f"\nCreating ground cover table backup...")
+                if not backup_table(args.ground_table, args.backup_bucket, "ground"):
+                    print("Backup failed. Aborting upload.")
+                    return False
+
+            upload_to_bigquery(
+                df_ground,
+                args.ground_table,
+                "ground",
+                ground_schema,
+                dry_run=False,
+                logger=ground_logger,
+            )
+        return True
+    else:
+        print("Ground cover data validation failed.")
+        return False
+
+
 def main():
     # Parse command line arguments
     args = parse_args()
@@ -397,83 +450,54 @@ def main():
         bigquery.SchemaField("intercept_ground_code", "STRING", mode="NULLABLE"),
     ]
 
-    # Process vegetation table
+    # Process vegetation table first
     print("\nProcessing vegetation data...")
     df_veg = transform_vegetation_data(df)
     veg_logger = setup_logging(args.vegetation_table, "vegetation")
     veg_logger.info("Starting vegetation data processing")
     veg_logger.info(f"Mode: {'DRY RUN' if args.dry_run else 'LIVE'}")
 
-    if validate_vegetation_data(df_veg, logger=veg_logger):
-        print("\nVegetation data validation passed!")
-        veg_logger.info("Vegetation data validation passed!")
-
-        if args.dry_run:
-            upload_to_bigquery(
-                df_veg,
-                args.vegetation_table,
-                "vegetation",
-                vegetation_schema,
-                dry_run=True,
-                logger=veg_logger,  # Pass existing logger
-            )
-        else:
-            if args.backup_bucket:
-                print(f"\nCreating vegetation table backup...")
-                if not backup_table(
-                    args.vegetation_table, args.backup_bucket, "vegetation"
-                ):
-                    print("Backup failed. Aborting upload.")
-                    return
-
-            upload_to_bigquery(
-                df_veg,
-                args.vegetation_table,
-                "vegetation",
-                vegetation_schema,
-                dry_run=False,
-                logger=veg_logger,  # Pass existing logger
-            )
-    else:
+    if not validate_vegetation_data(df_veg, logger=veg_logger):
         print("Vegetation data validation failed.")
+        return
 
-    # Process ground cover table
-    print("\nProcessing ground cover data...")
-    df_ground = transform_ground_data(df)
-    ground_logger = setup_logging(args.ground_table, "ground")
-    ground_logger.info("Starting ground cover data processing")
-    ground_logger.info(f"Mode: {'DRY RUN' if args.dry_run else 'LIVE'}")
+    print("\nVegetation data validation passed!")
+    veg_logger.info("Vegetation data validation passed!")
 
-    if validate_ground_data(df_ground, logger=ground_logger):
-        print("\nGround cover data validation passed!")
-        ground_logger.info("Ground cover data validation passed!")
-
-        if args.dry_run:
-            upload_to_bigquery(
-                df_ground,
-                args.ground_table,
-                "ground",
-                ground_schema,
-                dry_run=True,
-                logger=ground_logger,  # Pass existing logger
-            )
-        else:
-            if args.backup_bucket:
-                print(f"\nCreating ground cover table backup...")
-                if not backup_table(args.ground_table, args.backup_bucket, "ground"):
-                    print("Backup failed. Aborting upload.")
-                    return
-
-            upload_to_bigquery(
-                df_ground,
-                args.ground_table,
-                "ground",
-                ground_schema,
-                dry_run=False,
-                logger=ground_logger,  # Pass existing logger
-            )
+    if args.dry_run:
+        upload_to_bigquery(
+            df_veg,
+            args.vegetation_table,
+            "vegetation",
+            vegetation_schema,
+            dry_run=True,
+            logger=veg_logger,
+        )
     else:
-        print("Ground cover data validation failed.")
+        if args.backup_bucket:
+            print(f"\nCreating vegetation table backup...")
+            if not backup_table(
+                args.vegetation_table, args.backup_bucket, "vegetation"
+            ):
+                print("Backup failed. Aborting upload.")
+                return
+
+        try:
+            upload_to_bigquery(
+                df_veg,
+                args.vegetation_table,
+                "vegetation",
+                vegetation_schema,
+                dry_run=False,
+                logger=veg_logger,
+            )
+        except Exception as e:
+            print(f"Vegetation upload failed: {e}")
+            return
+
+    # Only process ground table if vegetation succeeded and not skipped
+    if not args.skip_ground_table and args.ground_table:
+        process_ground_table(df, args, ground_schema)
 
 
 if __name__ == "__main__":
