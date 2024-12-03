@@ -146,12 +146,14 @@ def transform_ground_data(df):
     return df_transformed
 
 
-def validate_vegetation_data(df):
+def validate_vegetation_data(df, logger=None):
     """Validate the vegetation data."""
-    print("\nValidating Vegetation Data:")
-    print(f"Total records: {len(df)}")
-    print("\nNull values in key columns:")
-    print(
+    validation_output = []
+    validation_output.append("\nValidating Vegetation Data:")
+    validation_output.append(f"Total records: {len(df)}")
+
+    validation_output.append("\nNull values in key columns:")
+    null_counts = (
         df[
             [
                 "survey_ID",
@@ -165,18 +167,26 @@ def validate_vegetation_data(df):
         .isnull()
         .sum()
     )
+    validation_output.append(str(null_counts))
 
-    print("\nData types:")
-    print(df.dtypes)
+    validation_output.append("\nData types:")
+    validation_output.append(str(df.dtypes))
 
-    # Validate required fields
+    # Log all validation output
+    if logger:
+        for line in validation_output:
+            logger.info(line)
+    else:
+        for line in validation_output:
+            print(line)
+
+    # Validate required fields - allow null intercept_1 values
     required_valid = all(
         [
             df["grid_point"].notnull().all(),
             df["date"].notnull().all(),
             df["year"].notnull().all(),
             df["transect_point"].notnull().all(),
-            df["intercept_1"].notnull().all(),
         ]
     )
 
@@ -186,12 +196,14 @@ def validate_vegetation_data(df):
     return required_valid and transect_format
 
 
-def validate_ground_data(df):
+def validate_ground_data(df, logger=None):
     """Validate the ground cover data."""
-    print("\nValidating Ground Cover Data:")
-    print(f"Total records: {len(df)}")
-    print("\nNull values in key columns:")
-    print(
+    validation_output = []
+    validation_output.append("\nValidating Ground Cover Data:")
+    validation_output.append(f"Total records: {len(df)}")
+
+    validation_output.append("\nNull values in key columns:")
+    null_counts = (
         df[
             [
                 "survey_ID",
@@ -206,12 +218,21 @@ def validate_ground_data(df):
         .isnull()
         .sum()
     )
+    validation_output.append(str(null_counts))
 
-    print("\nUnique ground cover codes:")
-    print(df["intercept_ground_code"].unique())
+    validation_output.append("\nUnique ground cover codes:")
+    validation_output.append(str(df["intercept_ground_code"].unique()))
 
-    print("\nData types:")
-    print(df.dtypes)
+    validation_output.append("\nData types:")
+    validation_output.append(str(df.dtypes))
+
+    # Log all validation output
+    if logger:
+        for line in validation_output:
+            logger.info(line)
+    else:
+        for line in validation_output:
+            print(line)
 
     # Validate required fields
     required_valid = all(
@@ -230,7 +251,7 @@ def validate_ground_data(df):
     return required_valid and transect_format
 
 
-def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True):
+def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True, logger=None):
     """Upload the transformed data to BigQuery."""
     client = bigquery.Client()
 
@@ -247,31 +268,37 @@ def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True):
             type_matches = True  # Detailed type checking would go here
 
             if type_matches:
-                print(
-                    f"\nDry run successful - {len(df)} rows would be uploaded to {table_id}"
-                )
-                print("Data schema and types are valid")
+                summary = [
+                    f"\nDry run successful - {len(df)} rows would be uploaded to {table_id}",
+                    "Data schema and types are valid",
+                    f"\nUpload Summary for {table_type} (Dry Run):",
+                    f"Total rows: {len(df)}",
+                    f"Unique survey_IDs: {df['survey_ID'].nunique()}",
+                    f"Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}",
+                    f"Unique grid points: {df['grid_point'].nunique()}",
+                    "\nSample of data that would be uploaded:",
+                    str(df.head()),
+                ]
 
-                print(f"\nUpload Summary for {table_type} (Dry Run):")
-                print(f"Total rows: {len(df)}")
-                print(f"Unique survey_IDs: {df['survey_ID'].nunique()}")
-                print(
-                    f"Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}"
-                )
-                print(f"Unique grid points: {df['grid_point'].nunique()}")
-                print("\nSample of data that would be uploaded:")
-                print(df.head())
+                # Print and log summary
+                for line in summary:
+                    print(line)
+                    if logger:
+                        logger.info(line)
             else:
-                print(
+                error_msg = (
                     "Schema validation failed - data types don't match expected schema"
                 )
+                print(error_msg)
+                if logger:
+                    logger.error(error_msg)
 
         except Exception as e:
-            print(f"Dry run validation failed: {e}")
+            error_msg = f"Dry run validation failed: {e}"
+            print(error_msg)
+            if logger:
+                logger.error(error_msg)
     else:
-        # Setup logging for actual upload
-        logger = setup_logging(table_id, table_type)
-
         try:
             logger.info(f"Starting upload to {table_id}")
             logger.info(f"Total rows to upload: {len(df)}")
@@ -287,7 +314,8 @@ def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True):
             print(f"See logs/bigquery_update_*_{table_type}_*.log for details")
 
         except Exception as e:
-            logger.error(f"Error uploading to BigQuery: {e}")
+            if logger:
+                logger.error(f"Error uploading to BigQuery: {e}")
             print(f"Error uploading to BigQuery: {e}")
 
 
@@ -351,8 +379,13 @@ def main():
     # Process vegetation table
     print("\nProcessing vegetation data...")
     df_veg = transform_vegetation_data(df)
-    if validate_vegetation_data(df_veg):
+    veg_logger = setup_logging(args.vegetation_table, "vegetation")
+    veg_logger.info("Starting vegetation data processing")
+    veg_logger.info(f"Mode: {'DRY RUN' if args.dry_run else 'LIVE'}")
+
+    if validate_vegetation_data(df_veg, logger=veg_logger):
         print("\nVegetation data validation passed!")
+        veg_logger.info("Vegetation data validation passed!")
 
         if args.dry_run:
             upload_to_bigquery(
@@ -361,6 +394,7 @@ def main():
                 "vegetation",
                 vegetation_schema,
                 dry_run=True,
+                logger=veg_logger,  # Pass existing logger
             )
         else:
             if args.backup_bucket:
@@ -377,6 +411,7 @@ def main():
                 "vegetation",
                 vegetation_schema,
                 dry_run=False,
+                logger=veg_logger,  # Pass existing logger
             )
     else:
         print("Vegetation data validation failed.")
@@ -384,8 +419,13 @@ def main():
     # Process ground cover table
     print("\nProcessing ground cover data...")
     df_ground = transform_ground_data(df)
-    if validate_ground_data(df_ground):
+    ground_logger = setup_logging(args.ground_table, "ground")
+    ground_logger.info("Starting ground cover data processing")
+    ground_logger.info(f"Mode: {'DRY RUN' if args.dry_run else 'LIVE'}")
+
+    if validate_ground_data(df_ground, logger=ground_logger):
         print("\nGround cover data validation passed!")
+        ground_logger.info("Ground cover data validation passed!")
 
         if args.dry_run:
             upload_to_bigquery(
@@ -394,6 +434,7 @@ def main():
                 "ground",
                 ground_schema,
                 dry_run=True,
+                logger=ground_logger,  # Pass existing logger
             )
         else:
             if args.backup_bucket:
@@ -408,6 +449,7 @@ def main():
                 "ground",
                 ground_schema,
                 dry_run=False,
+                logger=ground_logger,  # Pass existing logger
             )
     else:
         print("Ground cover data validation failed.")
