@@ -22,9 +22,49 @@ python src/data/additional_species_update.py \
   --backup-bucket BUCKET_NAME
 ```
 
-The script supports:
+Dry run mode (validate without uploading):
+```bash
+python src/data/additional_species_update.py \
+  --table PROJECT.DATASET.TABLE \
+  --dry-run
+```
+
+## Point Intercepts Data
+
+This project also includes a script for uploading point intercepts data to BigQuery. The data is split into two tables:
+- Vegetation data (species and height measurements)
+- Ground cover data
+
+### Point Intercepts Upload Script
+`src/data/point_intercepts_update.py` - Uploads point intercepts data to both vegetation and ground cover tables
+
+#### Usage
+Basic usage:
+```bash
+python src/data/point_intercepts_update.py \
+  --vegetation-table PROJECT.DATASET.gridVeg_point_intercept_vegetation \
+  --ground-table PROJECT.DATASET.gridVeg_point_intercept_ground
+```
+
+With backup to Google Cloud Storage:
+```bash
+python src/data/point_intercepts_update.py \
+  --vegetation-table PROJECT.DATASET.gridVeg_point_intercept_vegetation \
+  --ground-table PROJECT.DATASET.gridVeg_point_intercept_ground \
+  --backup-bucket BUCKET_NAME
+```
+
+Dry run mode (validate without uploading):
+```bash
+python src/data/point_intercepts_update.py \
+  --vegetation-table PROJECT.DATASET.gridVeg_point_intercept_vegetation \
+  --ground-table PROJECT.DATASET.gridVeg_point_intercept_ground \
+  --dry-run
+```
+
+Both scripts support:
 - Dry run mode for validation
-- Data type **verification**
+- Data type verification
 - Logging of upload operations
 - Automatic table backup to GCS (optional)
 
@@ -42,4 +82,4 @@ The script supports:
 
 ### Logs
 Upload logs are stored in the `logs` directory with timestamps and table names.
-Table backups are stored in GCS using the pattern: `gs://BUCKET/backups/TABLE/TIMESTAMP/`
+Table backups are stored in GCS using the pattern: `gs://BUCKET/backups/TABLE/TYPE/TIMESTAMP/`
