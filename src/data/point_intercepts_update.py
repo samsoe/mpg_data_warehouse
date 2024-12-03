@@ -111,6 +111,21 @@ def transform_vegetation_data(df):
     # Take first 8 characters of UUID for survey_ID
     df_transformed["survey_ID"] = df_transformed["survey_ID"].str[:8]
 
+    # Select only the columns needed for the vegetation table
+    columns_to_keep = [
+        "survey_ID",
+        "grid_point",
+        "date",
+        "year",
+        "transect_point",
+        "height_intercept_1",
+        "intercept_1",
+        "intercept_2",
+        "intercept_3",
+        "intercept_4",
+    ]
+    df_transformed = df_transformed[columns_to_keep]
+
     return df_transformed
 
 
@@ -142,6 +157,18 @@ def transform_ground_data(df):
 
     # Take first 8 characters of UUID for survey_ID
     df_transformed["survey_ID"] = df_transformed["survey_ID"].str[:8]
+
+    # Select only the columns needed for the ground cover table
+    columns_to_keep = [
+        "survey_ID",
+        "grid_point",
+        "date",
+        "year",
+        "transect_point",
+        "intercept_1",
+        "intercept_ground_code",
+    ]
+    df_transformed = df_transformed[columns_to_keep]
 
     return df_transformed
 

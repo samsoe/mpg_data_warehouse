@@ -38,6 +38,30 @@ This project also includes a script for uploading point intercepts data to BigQu
 ### Point Intercepts Upload Script
 `src/data/point_intercepts_update.py` - Uploads point intercepts data to both vegetation and ground cover tables
 
++ ### Schema Requirements
++ #### Vegetation Table
++ - survey_ID (STRING)
++ - grid_point (INTEGER)
++ - date (DATE)
++ - year (INTEGER)
++ - transect_point (STRING)
++ - height_intercept_1 (NUMERIC)
++ - intercept_1 (INTEGER)
++ - intercept_2 (INTEGER)
++ - intercept_3 (INTEGER)
++ - intercept_4 (INTEGER)
++ 
++ #### Ground Cover Table
++ - survey_ID (STRING)
++ - grid_point (INTEGER)
++ - date (DATE)
++ - year (INTEGER)
++ - transect_point (STRING)
++ - intercept_1 (INTEGER)
++ - intercept_ground_code (STRING)
++ 
++ All fields are nullable.
+
 #### Usage
 Basic usage:
 ```bash
