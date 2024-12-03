@@ -31,36 +31,42 @@ python src/data/additional_species_update.py \
 
 ## Point Intercepts Data
 
-This project also includes a script for uploading point intercepts data to BigQuery. The data is split into two tables:
+This project includes a script for uploading vegetation point intercepts data to BigQuery. The data is split into two tables:
 - Vegetation data (species and height measurements)
 - Ground cover data
 
 ### Point Intercepts Upload Script
-`src/data/point_intercepts_update.py` - Uploads point intercepts data to both vegetation and ground cover tables
+`src/data/point_intercepts_update.py` - Uploads point intercepts data to both vegetation and ground cover tables. The script:
+- Handles nullable integer fields
+- Validates data format and required fields
+- Supports both vegetation and ground cover tables
+- Provides detailed upload logging
 
-+ ### Schema Requirements
-+ #### Vegetation Table
-+ - survey_ID (STRING)
-+ - grid_point (INTEGER)
-+ - date (DATE)
-+ - year (INTEGER)
-+ - transect_point (STRING)
-+ - height_intercept_1 (NUMERIC)
-+ - intercept_1 (INTEGER)
-+ - intercept_2 (INTEGER)
-+ - intercept_3 (INTEGER)
-+ - intercept_4 (INTEGER)
-+ 
-+ #### Ground Cover Table
-+ - survey_ID (STRING)
-+ - grid_point (INTEGER)
-+ - date (DATE)
-+ - year (INTEGER)
-+ - transect_point (STRING)
-+ - intercept_1 (INTEGER)
-+ - intercept_ground_code (STRING)
-+ 
-+ All fields are nullable.
+### Schema Requirements
+#### Vegetation Table
+- survey_ID (STRING)
+- grid_point (INTEGER)
+- date (DATE)
+- year (INTEGER)
+- transect_point (STRING)
+- height_intercept_1 (NUMERIC)
+- intercept_1 (INTEGER)
+- intercept_2 (INTEGER)
+- intercept_3 (INTEGER)
+- intercept_4 (INTEGER)
+
+Note: Height measurements may not be present in all surveys (e.g., 2024 data).
+
+#### Ground Cover Table
+- survey_ID (STRING)
+- grid_point (INTEGER)
+- date (DATE)
+- year (INTEGER)
+- transect_point (STRING)
+- intercept_1 (INTEGER)
+- intercept_ground_code (STRING)
+
+All fields are nullable. Integer fields use NULLABLE INTEGER type in BigQuery.
 
 #### Usage
 Basic usage:

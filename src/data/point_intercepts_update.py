@@ -103,32 +103,39 @@ def transform_vegetation_data(df):
     # Convert date format
     df_transformed["date"] = pd.to_datetime(df_transformed["date"])
 
-    # Convert numeric fields - use int64 instead of int32
+    # Convert numeric fields
     df_transformed["grid_point"] = pd.to_numeric(df_transformed["grid_point"])
     df_transformed["year"] = pd.to_numeric(df_transformed["year"])
-    df_transformed["height_intercept_1"] = (
-        df_transformed["height_intercept_1"].replace("", pd.NA).astype("float64")
-    )
 
-    # Convert intercept columns to nullable integers - use Int64 instead of Int32
-    intercept_columns = ["intercept_1", "intercept_2", "intercept_3", "intercept_4"]
-    for col in intercept_columns:
-        df_transformed[col] = df_transformed[col].replace("", pd.NA).astype("Int64")
-
-    # Select only the columns needed for the vegetation table
-    columns_to_keep = [
-        "survey_ID",
-        "grid_point",
-        "date",
-        "year",
-        "transect_point",
+    # Handle nullable numeric fields
+    numeric_columns = [
         "height_intercept_1",
         "intercept_1",
         "intercept_2",
         "intercept_3",
         "intercept_4",
     ]
-    df_transformed = df_transformed[columns_to_keep]
+    for col in numeric_columns:
+        # Replace empty strings with None before conversion
+        df_transformed[col] = df_transformed[col].replace(["", "NA"], None)
+        if col == "height_intercept_1":
+            # Convert to float for NUMERIC type and handle empty strings
+            df_transformed[col] = pd.to_numeric(
+                df_transformed[col], errors="coerce", downcast="float"
+            )
+        else:
+            # Convert to nullable integer using Int64
+            df_transformed[col] = pd.to_numeric(
+                df_transformed[col], errors="coerce"
+            ).astype("Int64")
+
+    # Add debug logging
+    print("\nColumn dtypes after transformation:")
+    print(df_transformed.dtypes)
+    print("\nSample of height values:")
+    print(df_transformed["height_intercept_1"].head(10))
+    print("\nNull counts:")
+    print(df_transformed.isnull().sum())
 
     return df_transformed
 
@@ -180,6 +187,7 @@ def validate_vegetation_data(df, logger=None):
     validation_output.append("\nValidating Vegetation Data:")
     validation_output.append(f"Total records: {len(df)}")
 
+    # Basic null value checks
     validation_output.append("\nNull values in key columns:")
     null_counts = (
         df[
@@ -283,6 +291,19 @@ def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True, logger=No
     """Upload the transformed data to BigQuery."""
     client = bigquery.Client()
 
+    # Convert DataFrame to records
+    records = df.to_dict("records")
+
+    # Handle nullable integers in records
+    for record in records:
+        for key, value in record.items():
+            if pd.isna(value):
+                record[key] = None
+            elif isinstance(value, pd.Timestamp):
+                record[key] = value.strftime("%Y-%m-%d")
+            elif isinstance(value, pd.Int64Dtype):
+                record[key] = int(value) if pd.notna(value) else None
+
     # Configure the load job
     job_config = bigquery.LoadJobConfig(
         write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
@@ -338,7 +359,8 @@ def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True, logger=No
                 if df[col].dtype in ["int32", "Int32", "int64", "Int64"]:
                     logger.info(f"First few {col} values:\n{df[col].head()}")
 
-            job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
+            # Use records instead of DataFrame
+            job = client.load_table_from_json(records, table_id, job_config=job_config)
             job.result()
 
             logger.info(f"Successfully uploaded {len(df)} rows to BigQuery")
