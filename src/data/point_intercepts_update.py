@@ -99,9 +99,6 @@ def transform_vegetation_data(df):
         }
     )
 
-    # Format UUID by removing hyphens
-    df_transformed["survey_ID"] = df_transformed["survey_ID"].str.replace("-", "")
-
     # Convert date format
     df_transformed["date"] = pd.to_datetime(df_transformed["date"])
 
@@ -336,8 +333,12 @@ def upload_to_bigquery(df, table_id, table_type, schema, dry_run=True, logger=No
             logger.info(f"Total rows to upload: {len(df)}")
             logger.info(f"Date range: {df['date'].min()} to {df['date'].max()}")
 
+            # Add debug info
+            logger.info(f"survey_ID type: {df['survey_ID'].dtype}")
+            logger.info(f"First few survey_IDs:\n{df['survey_ID'].head()}")
+
             job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
-            job.result()  # Wait for the job to complete
+            job.result()
 
             logger.info(f"Successfully uploaded {len(df)} rows to BigQuery")
             logger.info("Upload completed successfully")
@@ -495,9 +496,9 @@ def main():
             print(f"Vegetation upload failed: {e}")
             return
 
-    # Only process ground table if vegetation succeeded and not skipped
-    if not args.skip_ground_table and args.ground_table:
-        process_ground_table(df, args, ground_schema)
+        # Only process ground table if vegetation succeeded
+        if not args.skip_ground_table and args.ground_table:
+            process_ground_table(df, args, ground_schema)
 
 
 if __name__ == "__main__":
