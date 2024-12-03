@@ -108,9 +108,6 @@ def transform_vegetation_data(df):
     for col in intercept_columns:
         df_transformed[col] = df_transformed[col].replace("", pd.NA).astype("Int64")
 
-    # Take first 8 characters of UUID for survey_ID
-    df_transformed["survey_ID"] = df_transformed["survey_ID"].str[:8]
-
     # Select only the columns needed for the vegetation table
     columns_to_keep = [
         "survey_ID",
@@ -154,9 +151,6 @@ def transform_ground_data(df):
     df_transformed["intercept_1"] = (
         df_transformed["intercept_1"].replace("", pd.NA).astype("Int64")
     )
-
-    # Take first 8 characters of UUID for survey_ID
-    df_transformed["survey_ID"] = df_transformed["survey_ID"].str[:8]
 
     # Select only the columns needed for the ground cover table
     columns_to_keep = [
