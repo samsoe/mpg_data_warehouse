@@ -2,6 +2,31 @@ import pandas as pd
 from pathlib import Path
 from google.cloud import bigquery
 import argparse
+from datetime import datetime
+import logging
+
+
+def setup_logging(table_id):
+    """Setup logging for BigQuery updates."""
+    # Create logs directory if it doesn't exist
+    log_dir = Path("logs")
+    log_dir.mkdir(exist_ok=True)
+
+    # Create log filename with timestamp and table name
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    table_name = table_id.split(".")[-1]
+    log_file = log_dir / f"bigquery_update_{table_name}_{timestamp}.log"
+
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(),  # Also print to console
+        ],
+    )
+    return logging.getLogger(__name__)
 
 
 def parse_args():
@@ -106,7 +131,7 @@ def upload_to_bigquery(df, table_id, dry_run=True):
             schema_types = {
                 "survey_ID": "object",
                 "grid_point": "int64",
-                "date": "object",
+                "date": "datetime64[ns]",  # Updated to match datetime type
                 "year": "int64",
                 "key_plant_species": "Int64",
             }
@@ -127,7 +152,9 @@ def upload_to_bigquery(df, table_id, dry_run=True):
                 print("\nUpload Summary (Dry Run):")
                 print(f"Total rows: {len(df)}")
                 print(f"Unique survey_IDs: {df['survey_ID'].nunique()}")
-                print(f"Date range: {df['date'].min()} to {df['date'].max()}")
+                print(
+                    f"Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}"
+                )
                 print("\nSample of data that would be uploaded:")
                 print(df.head())
             else:
@@ -143,12 +170,26 @@ def upload_to_bigquery(df, table_id, dry_run=True):
         except Exception as e:
             print(f"Dry run validation failed: {e}")
     else:
+        # Setup logging for actual upload
+        logger = setup_logging(table_id)
+
         # Actual upload
         try:
+            logger.info(f"Starting upload to {table_id}")
+            logger.info(f"Total rows to upload: {len(df)}")
+            logger.info(f"Date range: {df['date'].min()} to {df['date'].max()}")
+
             job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
             job.result()  # Wait for the job to complete
+
+            logger.info(f"Successfully uploaded {len(df)} rows to BigQuery")
+            logger.info("Upload completed successfully")
+
             print(f"\nSuccessfully uploaded {len(df)} rows to BigQuery")
+            print(f"See logs/bigquery_update_*.log for details")
+
         except Exception as e:
+            logger.error(f"Error uploading to BigQuery: {e}")
             print(f"Error uploading to BigQuery: {e}")
 
 

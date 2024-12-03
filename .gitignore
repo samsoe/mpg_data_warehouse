@@ -47,8 +47,8 @@ venv.bak/
 /models/
 
 # Logs
-*.log
-logs/
+logs/*
+!logs/.gitkeep
 
 # OS-specific
 .DS_Store
