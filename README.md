@@ -7,17 +7,17 @@ Tools for managing and updating the MPG Ranch data warehouse.
 This project includes a script for uploading additional species data to BigQuery.
 
 ### BigQuery Upload Script
-`additional_species-update.py` - Uploads the additional species data to BigQuery
+`src/data/additional_species_update.py` - Uploads the additional species data to BigQuery
 
 #### Usage
 Basic usage:
 ```bash
-python additional_species-update.py --table PROJECT.DATASET.TABLE
+python src/data/additional_species_update.py --table PROJECT.DATASET.TABLE
 ```
 
 With backup to Google Cloud Storage:
 ```bash
-python additional_species-update.py \
+python src/data/additional_species_update.py \
   --table PROJECT.DATASET.TABLE \
   --backup-bucket BUCKET_NAME
 ```

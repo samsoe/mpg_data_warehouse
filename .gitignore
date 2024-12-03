@@ -46,6 +46,15 @@ venv.bak/
 # Models (uncomment if your models are too large)
 /models/
 
+# Unused project directories
+/src/models/
+/src/features/
+/src/visualization/
+/src/reports/
+/src/references/
+/src/notebooks/
+/src/docs/
+
 # Logs
 logs/*
 !logs/.gitkeep

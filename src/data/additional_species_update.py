@@ -9,7 +9,7 @@ import logging
 def setup_logging(table_id):
     """Setup logging for BigQuery updates."""
     # Create logs directory if it doesn't exist
-    log_dir = Path("logs")
+    log_dir = Path(__file__).parents[2] / "logs"
     log_dir.mkdir(exist_ok=True)
 
     # Create log filename with timestamp and table name
@@ -48,7 +48,10 @@ def parse_args():
 
 def load_data():
     """Load the additional species data from CSV file."""
-    file_path = Path("data/external/2024-10-21_gridVeg_additional_species_SOURCE.csv")
+    file_path = (
+        Path(__file__).parents[2]
+        / "data/external/2024-10-21_gridVeg_additional_species_SOURCE.csv"
+    )
     df = pd.read_csv(file_path)
     return df
 
