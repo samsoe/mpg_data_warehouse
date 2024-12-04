@@ -8,8 +8,8 @@ import logging
 
 def setup_logging(table_id):
     """Setup logging for BigQuery updates."""
-    log_dir = Path(__file__).parents[2] / "logs"
-    log_dir.mkdir(exist_ok=True)
+    log_dir = Path(__file__).parents[2] / "logs" / "survey_metadata"
+    log_dir.mkdir(exist_ok=True, parents=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_file = log_dir / f"bigquery_update_gridVeg_survey_metadata_{timestamp}.log"
