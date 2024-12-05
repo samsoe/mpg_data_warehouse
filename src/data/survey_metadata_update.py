@@ -64,8 +64,8 @@ def transform_data(df):
     df_transformed["year"] = pd.to_numeric(df_transformed["year"])
     df_transformed["grid_point"] = pd.to_numeric(df_transformed["grid_point"])
 
-    # Add survey_sequence column (null for now, can be updated if needed)
-    df_transformed["survey_sequence"] = None
+    # Set survey_sequence equal to year
+    df_transformed["survey_sequence"] = df_transformed["year"].astype(str)
 
     # Reorder columns to match schema
     columns_order = [
