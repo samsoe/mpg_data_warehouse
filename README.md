@@ -20,6 +20,22 @@ Scripts for processing and uploading vegetation survey data to BigQuery.
 
 ### Scripts
 
+#### Survey Metadata Update
+
+Updates the survey metadata table in BigQuery with vegetation survey information.
+
+```bash
+# Dry run to validate data
+python src/data/survey_metadata_update.py \
+  --table-id project.dataset.gridVeg_survey_metadata \
+  --dry-run
+
+# Upload with backup
+python src/data/survey_metadata_update.py \
+  --table-id project.dataset.gridVeg_survey_metadata \
+  --backup-bucket bucket-name
+```
+
 #### Point Intercepts Update
 
 Updates vegetation point intercept tables in BigQuery.
@@ -70,7 +86,7 @@ python src/data/additional_species_update.py \
   --backup-bucket bucket-name
 ```
 
-Both scripts support:
+All scripts support:
 - Dry run mode for validation
 - Data type verification
 - Logging of upload operations
