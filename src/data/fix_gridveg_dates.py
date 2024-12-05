@@ -173,7 +173,9 @@ def fix_dates(client, project_id, dataset_id, table_id, bucket_name, dry_run=Tru
     FROM `{project}.{dataset}.gridVeg_survey_metadata` m
     WHERE a.survey_ID = m.survey_ID
     AND a.date > '2024-12-31'
-    """
+    """.format(
+        project=project_id, dataset=dataset_id, table=table_id
+    )
 
     logging.info("Executing update...")
     job = client.query(update_query)
@@ -187,6 +189,7 @@ def fix_dates(client, project_id, dataset_id, table_id, bucket_name, dry_run=Tru
     SELECT COUNT(*) as mismatched_years
     FROM `{project}.{dataset}.{table}`
     WHERE EXTRACT(YEAR FROM date) != year
+    AND date > '2024-12-31'  -- Only check records we modified
     """.format(
         project=project_id, dataset=dataset_id, table=table_id
     )
