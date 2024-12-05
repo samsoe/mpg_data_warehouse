@@ -97,7 +97,7 @@ def analyze_with_metadata(client):
 
 def analyze_metadata_coverage(client):
     """Analyze how many additional_species records can be matched with metadata"""
-    query = """
+    coverage_query = """
     WITH additional_species_dates AS (
         SELECT DISTINCT
             survey_ID,
@@ -116,7 +116,35 @@ def analyze_metadata_coverage(client):
     ON a.survey_ID = m.survey_ID
     """
 
-    df = client.query(query).to_dataframe()
+    # Query to examine unmatched records
+    unmatched_query = """
+    WITH additional_species_dates AS (
+        SELECT DISTINCT
+            survey_ID,
+            date as species_date,
+            COUNT(*) as record_count
+        FROM 
+            `mpg-data-warehouse.vegetation_point_intercept_gridVeg.gridVeg_additional_species`
+        GROUP BY survey_ID, date
+    )
+    SELECT
+        a.survey_ID,
+        a.species_date,
+        a.record_count
+    FROM additional_species_dates a
+    LEFT JOIN 
+        `mpg-data-warehouse.vegetation_point_intercept_gridVeg.gridVeg_survey_metadata` m
+    ON a.survey_ID = m.survey_ID
+    WHERE m.survey_ID IS NULL
+    ORDER BY a.species_date
+    """
+
+    df = client.query(coverage_query).to_dataframe()
+    unmatched_df = client.query(unmatched_query).to_dataframe()
+
+    # Convert species_date to datetime
+    unmatched_df["species_date"] = pd.to_datetime(unmatched_df["species_date"])
+
     if not df.empty:
         print("\nMetadata Coverage Analysis:")
         print(
@@ -133,7 +161,20 @@ def analyze_metadata_coverage(client):
         matched = df["matched_with_metadata"].iloc[0]
         print(f"\nMetadata coverage: {(matched/total*100):.1f}%")
 
-    return df
+        if not unmatched_df.empty:
+            print("\nUnmatched Records Analysis:")
+            print(
+                f"Number of unique survey_IDs without metadata: {unmatched_df['survey_ID'].nunique()}"
+            )
+            print("\nSample of unmatched records:")
+            print(unmatched_df.head())
+
+            # Year distribution of unmatched records
+            print("\nYear distribution of unmatched records:")
+            year_dist = unmatched_df["species_date"].dt.year.value_counts().sort_index()
+            print(year_dist)
+
+    return df, unmatched_df
 
 
 def check_related_tables(client):
@@ -165,7 +206,7 @@ def main():
     metadata_analysis = analyze_with_metadata(client)
 
     # Analyze metadata coverage
-    coverage_analysis = analyze_metadata_coverage(client)
+    coverage_analysis, unmatched_df = analyze_metadata_coverage(client)
 
     # Check related tables
     check_related_tables(client)
