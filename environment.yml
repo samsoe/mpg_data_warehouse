@@ -9,4 +9,5 @@ dependencies:
   - matplotlib
   - seaborn
   - google-cloud-bigquery
+  - google-cloud-storage
   - db-dtypes 
