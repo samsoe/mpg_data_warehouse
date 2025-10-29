@@ -18,6 +18,33 @@ Scripts for processing and uploading vegetation survey data to BigQuery.
    conda activate gcloud
    ```
 
+3. Configure sensitive data (for notebooks):
+   ```bash
+   cp config.example.yml config.yml
+   # Edit config.yml with your actual GCS URLs and BigQuery table IDs
+   ```
+
+### Notebooks
+
+Jupyter notebooks for interactive data updates and exploration.
+
+#### Plant Species Metadata Update
+
+Updates plant species metadata in BigQuery from a CSV file stored in GCS.
+
+**Location:** `notebooks/update_plant_species_metadata.ipynb`
+
+**Configuration:**
+- Copy `config.example.yml` to `config.yml` and fill in:
+  - `gcs.csv_url`: GCS path to your plant species CSV
+  - `bigquery.table_id`: BigQuery table ID (format: `project.dataset.table`)
+
+**Features:**
+- Reads CSV directly from Google Cloud Storage
+- YAML-based configuration (sensitive data excluded from git)
+- Data validation and exploration
+- Interactive BigQuery updates
+
 ### Scripts
 
 #### Survey Metadata Update
