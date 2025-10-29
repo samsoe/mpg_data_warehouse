@@ -11,5 +11,4 @@ dependencies:
   - google-cloud-bigquery
   - google-cloud-storage
   - db-dtypes
-  - python-dotenv
-  - pyyaml 
+  - pyyaml
