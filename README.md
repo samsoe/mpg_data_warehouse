@@ -26,12 +26,12 @@ Updates the survey metadata table in BigQuery with vegetation survey information
 
 ```bash
 # Dry run to validate data
-python src/data/survey_metadata_update.py \
+python src/survey_metadata_update.py \
   --table-id project.dataset.gridVeg_survey_metadata \
   --dry-run
 
 # Upload with backup
-python src/data/survey_metadata_update.py \
+python src/survey_metadata_update.py \
   --table-id project.dataset.gridVeg_survey_metadata \
   --backup-bucket bucket-name
 ```
@@ -42,13 +42,13 @@ Updates vegetation point intercept tables in BigQuery.
 
 ```bash
 # Dry run to validate data
-python src/data/point_intercepts_update.py \
+python src/point_intercepts_update.py \
   --vegetation-table project.dataset.vegetation_table \
   --ground-table project.dataset.ground_table \
   --dry-run
 
 # Upload with backup
-python src/data/point_intercepts_update.py \
+python src/point_intercepts_update.py \
   --vegetation-table project.dataset.vegetation_table \
   --ground-table project.dataset.ground_table \
   --backup-bucket bucket-name
@@ -60,12 +60,12 @@ Updates the image metadata table in BigQuery with reference photo information.
 
 ```bash
 # Dry run to validate data
-python src/data/image_metadata_update.py \
+python src/image_metadata_update.py \
   --table-id project.dataset.gridVeg_image_metadata \
   --dry-run
 
 # Upload with backup
-python src/data/image_metadata_update.py \
+python src/image_metadata_update.py \
   --table-id project.dataset.gridVeg_image_metadata \
   --backup-bucket bucket-name
 ```
@@ -76,12 +76,12 @@ Updates additional species tables in BigQuery.
 
 ```bash
 # Dry run to validate data
-python src/data/additional_species_update.py \
+python src/additional_species_update.py \
   --table-id project.dataset.table \
   --dry-run
 
 # Upload with backup
-python src/data/additional_species_update.py \
+python src/additional_species_update.py \
   --table-id project.dataset.table \
   --backup-bucket bucket-name
 ```
