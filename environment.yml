@@ -10,4 +10,7 @@ dependencies:
   - seaborn
   - google-cloud-bigquery
   - google-cloud-storage
-  - db-dtypes 
+  - db-dtypes
+  - pyyaml
+  - fsspec
+  - gcsfs

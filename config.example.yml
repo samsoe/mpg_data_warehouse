@@ -1,0 +1,23 @@
+# Configuration for Plant Species Metadata Update
+# Copy this file to config.yml and fill in your actual values
+# The config.yml file is gitignored and will not be committed to the repo
+
+# GCS Configuration
+gcs:
+  # URL to the plant species CSV file in Google Cloud Storage
+  # Format: gs://bucket-name/path/to/file.csv
+  csv_url: "gs://your-bucket/path/to/plant_species.csv"
+  
+  # Backup location for table backups (optional but recommended)
+  backup_bucket: "your-bucket"
+  backup_prefix: "backups/plant_species"
+
+# BigQuery Configuration
+bigquery:
+  # Full table ID for the plant species metadata table
+  # Format: project.dataset.table
+  table_id: "your-project.your_dataset.plant_species_table"
+  
+  # Optional: Specify project explicitly if needed
+  project: "your-project-id"
+
