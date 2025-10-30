@@ -41,3 +41,23 @@ gridveg_survey_metadata:
     # Optional: Specify project explicitly if needed
     project: "your-project-id"
 
+# GridVeg Point Intercepts Update Configuration
+# Used by: notebooks/update_gridVeg_point_intercepts.ipynb
+gridveg_point_intercepts:
+  gcs:
+    # URL to the gridVeg point intercepts CSV file in Google Cloud Storage
+    csv_url: "gs://your-bucket/path/to/gridVeg_point_intercepts.csv"
+    
+    # Backup location for table backups (optional but recommended)
+    backup_bucket: "your-bucket"
+    backup_prefix: "gridVeg/bak"
+  
+  bigquery:
+    # Full table IDs for the gridVeg point intercept tables
+    # This CSV feeds two different tables
+    table_vegetation: "your-project.your_dataset.gridVeg_point_intercept_vegetation"
+    table_ground: "your-project.your_dataset.gridVeg_point_intercept_ground"
+    
+    # Optional: Specify project explicitly if needed
+    project: "your-project-id"
+
