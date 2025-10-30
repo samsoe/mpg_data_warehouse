@@ -34,13 +34,15 @@ Updates plant species metadata in BigQuery from a CSV file stored in GCS.
 
 **Location:** `notebooks/update_plant_species_metadata.ipynb`
 
+**Operation:** REPLACE entire table (WRITE_TRUNCATE)
+
 **Documentation:** [Vegetation Species Metadata Documentation](https://docs.google.com/document/d/1aRGYGPsuHmuOxi29bfdzaackjJkfCEY3T2Z3rekQUbY/edit?usp=sharing)
 
 **Configuration:**
 - Copy `config.example.yml` to `config.yml` and fill in:
-  - `gcs.csv_url`: GCS path to your plant species CSV
-  - `bigquery.table_id`: BigQuery table ID (format: `project.dataset.table`)
-  - `gcs.backup_bucket`: (Optional) GCS bucket for table backups
+  - `plant_species.gcs.csv_url`: GCS path to your plant species CSV
+  - `plant_species.bigquery.table_id`: BigQuery table ID (format: `project.dataset.table`)
+  - `plant_species.gcs.backup_bucket`: (Optional) GCS bucket for table backups
 
 **Features:**
 - Reads CSV directly from Google Cloud Storage
@@ -49,6 +51,33 @@ Updates plant species metadata in BigQuery from a CSV file stored in GCS.
 - Compare differences between new and existing data
 - Data validation and exploration
 - Interactive BigQuery updates
+
+#### GridVeg Survey Metadata Update
+
+Appends new gridVeg survey metadata to BigQuery from a CSV file stored in GCS.
+
+**Location:** `notebooks/update_gridVeg_survey_metadata.ipynb`
+
+**Operation:** APPEND new rows only (WRITE_APPEND)
+
+**Configuration:**
+- Copy `config.example.yml` to `config.yml` and fill in:
+  - `gridveg_survey_metadata.gcs.csv_url`: GCS path to survey metadata CSV
+  - `gridveg_survey_metadata.bigquery.table_id`: BigQuery table ID (format: `project.dataset.table`)
+  - `gridveg_survey_metadata.gcs.backup_bucket`: (Optional) GCS bucket for table backups
+
+**Features:**
+- Reads CSV directly from Google Cloud Storage
+- YAML-based configuration (sensitive data excluded from git)
+- Automatic backup of existing table before appending
+- Identifies new records vs existing (based on survey_ID)
+- Schema transformations:
+  - Column renaming to match warehouse schema
+  - Date format conversion (mm/dd/yyyy → YYYY-MM-DD)
+  - Creates `survey_sequence` variable (2011/2012 → "2011-12")
+- Appends only new records (no duplicates)
+- Data validation and verification
+- Comprehensive summary report
 
 ### Scripts
 
