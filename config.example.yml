@@ -1,23 +1,43 @@
-# Configuration for Plant Species Metadata Update
+# Configuration for Data Warehouse Updates
 # Copy this file to config.yml and fill in your actual values
 # The config.yml file is gitignored and will not be committed to the repo
 
-# GCS Configuration
-gcs:
-  # URL to the plant species CSV file in Google Cloud Storage
-  # Format: gs://bucket-name/path/to/file.csv
-  csv_url: "gs://your-bucket/path/to/plant_species.csv"
+# Plant Species Metadata Update Configuration
+# Used by: notebooks/update_plant_species_metadata.ipynb
+plant_species:
+  gcs:
+    # URL to the plant species CSV file in Google Cloud Storage
+    # Format: gs://bucket-name/path/to/file.csv
+    csv_url: "gs://your-bucket/path/to/plant_species.csv"
+    
+    # Backup location for table backups (optional but recommended)
+    backup_bucket: "your-bucket"
+    backup_prefix: "backups/plant_species"
   
-  # Backup location for table backups (optional but recommended)
-  backup_bucket: "your-bucket"
-  backup_prefix: "backups/plant_species"
+  bigquery:
+    # Full table ID for the plant species metadata table
+    # Format: project.dataset.table
+    table_id: "your-project.your_dataset.plant_species_table"
+    
+    # Optional: Specify project explicitly if needed
+    project: "your-project-id"
 
-# BigQuery Configuration
-bigquery:
-  # Full table ID for the plant species metadata table
-  # Format: project.dataset.table
-  table_id: "your-project.your_dataset.plant_species_table"
+# GridVeg Survey Metadata Update Configuration
+# Used by: notebooks/update_gridVeg_survey_metadata.ipynb
+gridveg_survey_metadata:
+  gcs:
+    # URL to the gridVeg survey metadata CSV file in Google Cloud Storage
+    csv_url: "gs://your-bucket/path/to/gridVeg_survey_metadata.csv"
+    
+    # Backup location for table backups (optional but recommended)
+    backup_bucket: "your-bucket"
+    backup_prefix: "backups/gridveg_survey_metadata"
   
-  # Optional: Specify project explicitly if needed
-  project: "your-project-id"
+  bigquery:
+    # Full table ID for the gridVeg survey metadata table
+    # Format: project.dataset.table
+    table_id: "your-project.your_dataset.gridVeg_survey_metadata"
+    
+    # Optional: Specify project explicitly if needed
+    project: "your-project-id"
 
