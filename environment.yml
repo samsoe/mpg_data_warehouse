@@ -12,3 +12,5 @@ dependencies:
   - google-cloud-storage
   - db-dtypes
   - pyyaml
+  - fsspec
+  - gcsfs
