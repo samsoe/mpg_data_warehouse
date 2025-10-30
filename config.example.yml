@@ -31,7 +31,7 @@ gridveg_survey_metadata:
     
     # Backup location for table backups (optional but recommended)
     backup_bucket: "your-bucket"
-    backup_prefix: "backups/gridveg_survey_metadata"
+    backup_prefix: "gridVeg/bak"
   
   bigquery:
     # Full table ID for the gridVeg survey metadata table
