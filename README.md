@@ -79,6 +79,38 @@ Appends new gridVeg survey metadata to BigQuery from a CSV file stored in GCS.
 - Data validation and verification
 - Comprehensive summary report
 
+#### GridVeg Point Intercepts Update
+
+Appends new gridVeg point intercept data to BigQuery from a CSV file stored in GCS. This single CSV feeds two separate tables: vegetation intercepts and ground cover intercepts.
+
+**Location:** `notebooks/update_gridVeg_point_intercepts.ipynb`
+
+**Operation:** APPEND new rows only (WRITE_APPEND)
+
+**Configuration:**
+- Copy `config.example.yml` to `config.yml` and fill in:
+  - `gridveg_point_intercepts.gcs.csv_url`: GCS path to point intercepts CSV
+  - `gridveg_point_intercepts.bigquery.table_vegetation`: BigQuery table ID for vegetation data
+  - `gridveg_point_intercepts.bigquery.table_ground`: BigQuery table ID for ground cover data
+  - `gridveg_point_intercepts.gcs.backup_bucket`: (Optional) GCS bucket for table backups
+
+**Features:**
+- Reads CSV directly from Google Cloud Storage
+- YAML-based configuration (sensitive data excluded from git)
+- Splits source CSV into two destination tables (vegetation and ground)
+- Identifies new records vs existing (based on survey_ID + transect_point composite key)
+- Schema transformations:
+  - Column renaming to match warehouse schema
+  - Date format conversion (mm/dd/yy → YYYY-MM-DD)
+  - Filters out 2010 records
+  - Proper handling of nullable integers
+- CSV upload method (avoids PyArrow serialization issues)
+- Integer columns converted properly (no .0 decimals)
+- BigQuery handles type parsing automatically
+- Appends only new records (no duplicates)
+- Data validation and verification queries
+- Comprehensive summary report with year-by-year breakdown
+
 ### Scripts
 
 #### Survey Metadata Update
