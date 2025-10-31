@@ -61,3 +61,22 @@ gridveg_point_intercepts:
     # Optional: Specify project explicitly if needed
     project: "your-project-id"
 
+# GridVeg Additional Species Update Configuration
+# Used by: notebooks/update_gridVeg_additional_species.ipynb
+gridveg_additional_species:
+  gcs:
+    # URL to the gridVeg additional species CSV file in Google Cloud Storage
+    csv_url: "gs://your-bucket/path/to/gridVeg_additional_species.csv"
+    
+    # Backup location for table backups (optional but recommended)
+    backup_bucket: "your-bucket"
+    backup_prefix: "backups/gridveg_additional_species"
+  
+  bigquery:
+    # Full table ID for the gridVeg additional species table
+    # Format: project.dataset.table
+    table_id: "your-project.your_dataset.gridVeg_additional_species"
+    
+    # Optional: Specify project explicitly if needed
+    project: "your-project-id"
+
