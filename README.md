@@ -111,6 +111,32 @@ Appends new gridVeg point intercept data to BigQuery from a CSV file stored in G
 - Data validation and verification queries
 - Comprehensive summary report with year-by-year breakdown
 
+#### GridVeg Additional Species Update
+
+Appends new gridVeg additional species observations to BigQuery from a CSV file stored in GCS. This table tracks additional plant species found during surveys that were not recorded in the standard point intercept protocol.
+
+**Location:** `notebooks/update_gridVeg_additional_species.ipynb`
+
+**Operation:** APPEND new rows only (WRITE_APPEND)
+
+**Configuration:**
+- Copy `config.example.yml` to `config.yml` and fill in:
+  - `gridveg_additional_species.gcs.csv_url`: GCS path to additional species CSV
+  - `gridveg_additional_species.bigquery.table_id`: BigQuery table ID (format: `project.dataset.table`)
+  - `gridveg_additional_species.gcs.backup_bucket`: (Optional) GCS bucket for table backups
+
+**Features:**
+- Reads CSV directly from Google Cloud Storage
+- YAML-based configuration (sensitive data excluded from git)
+- Automatic backup of existing table before appending
+- Identifies new records vs existing (based on survey_ID + key_plant_species composite key)
+- Schema transformations:
+  - Column renaming to match warehouse schema
+  - Date format conversion (mm/dd/yy → YYYY-MM-DD)
+- Appends only new records (no duplicates)
+- Data validation and verification
+- Comprehensive summary report with year-by-year breakdown
+
 ### Scripts
 
 #### Survey Metadata Update
