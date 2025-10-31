@@ -160,7 +160,7 @@ Appends new gridVeg reference image metadata to BigQuery from a CSV file stored 
   - Column renaming to match warehouse schema
   - Date format conversion (mm/dd/yy → YYYY-MM-DD)
   - Cleans Direction field (strips whitespace, handles invisible characters)
-  - Adds image_url column (initially NULL, to be populated separately)
+  - Generates image_url from image_ID (https://storage.cloud.google.com/gridveg-reference-images/{image_ID}.jpg)
 - Appends only new records (no duplicates)
 - Data validation and verification
 - Comprehensive summary report with year and direction breakdowns
