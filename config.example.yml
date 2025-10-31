@@ -80,3 +80,22 @@ gridveg_additional_species:
     # Optional: Specify project explicitly if needed
     project: "your-project-id"
 
+# GridVeg Image Metadata Update Configuration
+# Used by: notebooks/update_gridVeg_image_metadata.ipynb
+gridveg_image_metadata:
+  gcs:
+    # URL to the gridVeg image metadata CSV file in Google Cloud Storage
+    csv_url: "gs://your-bucket/path/to/gridVeg_ref_image_metadata.csv"
+    
+    # Backup location for table backups (optional but recommended)
+    backup_bucket: "your-bucket"
+    backup_prefix: "gridVeg/bak"
+  
+  bigquery:
+    # Full table ID for the gridVeg image metadata table
+    # Format: project.dataset.table
+    table_id: "your-project.your_dataset.gridVeg_image_metadata"
+    
+    # Optional: Specify project explicitly if needed
+    project: "your-project-id"
+

@@ -137,6 +137,34 @@ Appends new gridVeg additional species observations to BigQuery from a CSV file 
 - Data validation and verification
 - Comprehensive summary report with year-by-year breakdown
 
+#### GridVeg Image Metadata Update
+
+Appends new gridVeg reference image metadata to BigQuery from a CSV file stored in GCS. This table tracks metadata for reference photos taken at grid points during vegetation surveys.
+
+**Location:** `notebooks/update_gridVeg_image_metadata.ipynb`
+
+**Operation:** APPEND new rows only (WRITE_APPEND)
+
+**Configuration:**
+- Copy `config.example.yml` to `config.yml` and fill in:
+  - `gridveg_image_metadata.gcs.csv_url`: GCS path to image metadata CSV
+  - `gridveg_image_metadata.bigquery.table_id`: BigQuery table ID (format: `project.dataset.table`)
+  - `gridveg_image_metadata.gcs.backup_bucket`: (Optional) GCS bucket for table backups
+
+**Features:**
+- Reads CSV directly from Google Cloud Storage
+- YAML-based configuration (sensitive data excluded from git)
+- Automatic backup of existing table before appending
+- Identifies new records vs existing (based on image_ID unique key)
+- Schema transformations:
+  - Column renaming to match warehouse schema
+  - Date format conversion (mm/dd/yy → YYYY-MM-DD)
+  - Cleans Direction field (strips whitespace, handles invisible characters)
+  - Generates image_url from image_ID (https://storage.cloud.google.com/gridveg-reference-images/{image_ID}.jpg)
+- Appends only new records (no duplicates)
+- Data validation and verification
+- Comprehensive summary report with year and direction breakdowns
+
 ### Scripts
 
 #### Survey Metadata Update
