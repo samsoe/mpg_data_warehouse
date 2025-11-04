@@ -200,6 +200,40 @@ Queries ground cover intercept data from BigQuery, performs transformations and 
 **Output:**
 - Processed CSV files in `data/processed/` (e.g., `gridVeg_groundCover_intercepts_WRANGLE-251104.csv`)
 
+#### GridVeg Species Richness Wrangle
+
+Queries plant species occurrence data from BigQuery, combines point intercept and supplemental observations, removes duplicates, and outputs processed CSV files for species richness analysis.
+
+**Location:** `notebooks/gridVeg_species_richness_WRANGLE.ipynb`
+
+**Language:** R (requires R kernel)
+
+**Operation:** READ from BigQuery → Transform → Export CSV
+
+**Authentication:**
+- Uses Application Default Credentials (ADC)
+- Run `gcloud auth application-default login` before executing notebook
+- No API key files needed
+
+**Data Sources (BigQuery):**
+- `vegetation_gridVeg_summaries.gridVeg_foliar_cover_all`: Plant species detected in point intercepts
+- `vegetation_point_intercept_gridVeg.gridVeg_additional_species`: Supplemental species observations
+- `vegetation_point_intercept_gridVeg.gridVeg_survey_metadata`: Survey metadata (year, grid_point)
+- `grid_point_summaries.location_position_classification`: Grid point location and habitat data
+- `vegetation_species_metadata.vegetation_species_metadata`: Plant species metadata
+
+**Features:**
+- Queries and downloads data directly from BigQuery using bigrquery package
+- Combines point intercept detections with supplemental species observations
+- Removes "NV" (no vegetation) entries
+- Identifies and removes duplicate species records (same species detected via multiple methods)
+- Filters data by year and removes NA values
+- Data validation and duplicate checking
+- Exports processed data to CSV
+
+**Output:**
+- Processed CSV files (e.g., `gridVeg_species_richness-WRANGLE.csv`)
+
 ### Scripts
 
 > **⚠️ DEPRECATED**: The Python scripts in `src/` are deprecated. Please use the Jupyter notebooks in `notebooks/` instead, which provide interactive data updates with better validation and reporting features.
