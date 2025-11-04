@@ -165,6 +165,41 @@ Appends new gridVeg reference image metadata to BigQuery from a CSV file stored 
 - Data validation and verification
 - Comprehensive summary report with year and direction breakdowns
 
+### Data Wrangling Notebooks
+
+These notebooks pull data FROM BigQuery for analysis, transformation, and processing (as opposed to the update notebooks above which upload data TO BigQuery).
+
+#### GridVeg Ground Cover Intercepts Wrangle
+
+Queries ground cover intercept data from BigQuery, performs transformations and joins, and outputs processed CSV files for analysis.
+
+**Location:** `notebooks/gridVeg_groundCover_intercepts_WRANGLE.ipynb`
+
+**Language:** R (requires R kernel)
+
+**Operation:** READ from BigQuery → Transform → Export CSV
+
+**Authentication:**
+- Uses Application Default Credentials (ADC)
+- Run `gcloud auth application-default login` before executing notebook
+- No API key files needed
+
+**Data Sources (BigQuery):**
+- `vegetation_point_intercept_gridVeg.gridVeg_point_intercept_ground`: Point intercept ground cover data
+- `vegetation_point_intercept_gridVeg.gridVeg_survey_metadata`: Survey metadata (year, survey_sequence)
+- `vegetation_point_intercept_gridVeg.gridVeg_ground_cover_metadata`: Ground cover code metadata
+
+**Features:**
+- Queries and downloads data directly from BigQuery using bigrquery package
+- Completes missing ground cover code combinations (fills with 0 intercepts)
+- Joins ground cover data with survey metadata and ground cover metadata
+- Filters data by year and specific grid points
+- Data validation and summary statistics
+- Exports processed data to `data/processed/` directory
+
+**Output:**
+- Processed CSV files in `data/processed/` (e.g., `gridVeg_groundCover_intercepts_WRANGLE-251104.csv`)
+
 ### Scripts
 
 > **⚠️ DEPRECATED**: The Python scripts in `src/` are deprecated. Please use the Jupyter notebooks in `notebooks/` instead, which provide interactive data updates with better validation and reporting features.
