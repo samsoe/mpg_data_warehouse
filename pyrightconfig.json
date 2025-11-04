@@ -1,0 +1,18 @@
+{
+  "exclude": [
+    "notebooks/gridVeg_groundCover_intercepts_WRANGLE.ipynb",
+    "notebooks/gridVeg_species_richness_WRANGLE.ipynb"
+  ],
+  "ignore": [
+    "notebooks/gridVeg_groundCover_intercepts_WRANGLE.ipynb",
+    "notebooks/gridVeg_species_richness_WRANGLE.ipynb"
+  ],
+  "reportMissingImports": false,
+  "reportUndefinedVariable": false,
+  "reportGeneralTypeIssues": false,
+  "reportOptionalMemberAccess": false,
+  "reportOptionalSubscript": false,
+  "reportPrivateImportUsage": false,
+  "typeCheckingMode": "off"
+}
+
