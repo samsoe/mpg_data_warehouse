@@ -1,4 +1,4 @@
-name: gcloud
+name: mpg-data-warehouse
 channels:
   - conda-forge
   - defaults
@@ -14,3 +14,9 @@ dependencies:
   - pyyaml
   - fsspec
   - gcsfs
+  - jupyter
+  - r-base
+  - r-irkernel
+  - r-tidyverse
+  - r-knitr
+  - r-bigrquery

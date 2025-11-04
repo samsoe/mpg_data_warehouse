@@ -15,7 +15,7 @@ Scripts for processing and uploading vegetation survey data to BigQuery.
 
 2. Activate environment:
    ```bash
-   conda activate gcloud
+   conda activate mpg-data-warehouse
    ```
 
 3. Configure sensitive data (for notebooks):
@@ -166,6 +166,8 @@ Appends new gridVeg reference image metadata to BigQuery from a CSV file stored 
 - Comprehensive summary report with year and direction breakdowns
 
 ### Scripts
+
+> **⚠️ DEPRECATED**: The Python scripts in `src/` are deprecated. Please use the Jupyter notebooks in `notebooks/` instead, which provide interactive data updates with better validation and reporting features.
 
 #### Survey Metadata Update
 
