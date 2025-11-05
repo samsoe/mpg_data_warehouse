@@ -234,6 +234,38 @@ Queries plant species occurrence data from BigQuery, combines point intercept an
 **Output:**
 - Processed CSV files (e.g., `gridVeg_species_richness-WRANGLE.csv`)
 
+#### GridVeg Plant Functional Groups Wrangle
+
+Queries plant species data from BigQuery, groups by plant functional groups (native status, life cycle, life form), calculates detection rates, and outputs processed CSV files for functional group analysis.
+
+**Location:** `notebooks/gridVeg_plant_functional_groups_WRANGLE.ipynb`
+
+**Language:** R (requires R kernel)
+
+**Operation:** READ from BigQuery → Transform → Export CSV
+
+**Authentication:**
+- Uses Application Default Credentials (ADC)
+- Run `gcloud auth application-default login` before executing notebook
+- No API key files needed
+
+**Data Sources (BigQuery):**
+- `vegetation_gridVeg_summaries.gridVeg_foliar_cover_all`: Plant species foliar cover data with functional group attributes
+- `vegetation_point_intercept_gridVeg.gridVeg_survey_metadata`: Survey metadata (year, survey_sequence, grid_point)
+
+**Features:**
+- Queries and downloads data directly from BigQuery using bigrquery package
+- Groups plant data by functional groups: plant_native_status, plant_life_cycle, plant_life_form
+- Calculates detection rates (sum of intercepts_pct) for each functional group per survey
+- Completes missing functional group combinations (fills with 0 detection rates)
+- Joins with survey metadata for temporal and spatial context
+- Filters data by year (e.g., 2022 data)
+- Data validation and summary statistics
+- Exports processed data to CSV
+
+**Output:**
+- Processed CSV files (e.g., `gridVeg_plant_functional_groups-WRANGLE.csv`)
+
 ### Scripts
 
 > **⚠️ DEPRECATED**: The Python scripts in `src/` are deprecated. Please use the Jupyter notebooks in `notebooks/` instead, which provide interactive data updates with better validation and reporting features.
