@@ -8,8 +8,6 @@ dependencies:
   - numpy
   - matplotlib
   - seaborn
-  - google-cloud-bigquery
-  - google-cloud-storage
   - db-dtypes
   - pyyaml
   - fsspec
@@ -20,3 +18,10 @@ dependencies:
   - r-tidyverse
   - r-knitr
   - r-bigrquery
+  - pip
+  - pip:
+    - google-auth>=2.14.1
+    - google-api-core>=2.11.1
+    - google-cloud-core>=2.0.0
+    - google-cloud-bigquery>=3.0.0
+    - google-cloud-storage>=3.0.0
