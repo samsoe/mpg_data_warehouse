@@ -119,3 +119,39 @@ csv_append:
     # Optional: Specify project explicitly if needed
     project: "your-project-id"
 
+# GridVeg Plant Functional Groups Append Configuration
+# Used by: notebooks/append_csv_to_bq.ipynb
+gridveg_plant_functional_groups_append:
+  gcs:
+    csv_url: "gs://mpg-data-warehouse/gridVeg/src/2025/gridVeg_plant_functional_groups-WRANGLE-251104.csv"
+    backup_bucket: "mpg-data-warehouse"
+    backup_prefix: "gridVeg/bak/plant_functional_groups"
+  
+  bigquery:
+    table_id: "mpg-data-warehouse.vegetation_gridVeg_summaries.gridVeg_plant_functional_groups"
+    project: "mpg-data-warehouse"
+
+# GridVeg Species Richness Append Configuration
+# Used by: notebooks/append_csv_to_bq.ipynb
+gridveg_species_richness_append:
+  gcs:
+    csv_url: "gs://mpg-data-warehouse/gridVeg/src/2025/gridVeg_species_richness_WRANGLE-251104.csv"
+    backup_bucket: "mpg-data-warehouse"
+    backup_prefix: "gridVeg/bak/species_richness"
+  
+  bigquery:
+    table_id: "mpg-data-warehouse.vegetation_gridVeg_summaries.gridVeg_species_richness"
+    project: "mpg-data-warehouse"
+
+# GridVeg Ground Cover Intercepts Append Configuration
+# Used by: notebooks/append_csv_to_bq.ipynb
+gridveg_groundcover_append:
+  gcs:
+    csv_url: "gs://mpg-data-warehouse/gridVeg/src/2025/gridVeg_groundCover_intercepts_WRANGLE-251104.csv"
+    backup_bucket: "mpg-data-warehouse"
+    backup_prefix: "gridVeg/bak/groundcover_intercepts"
+  
+  bigquery:
+    table_id: "mpg-data-warehouse.vegetation_gridVeg_summaries.gridVeg_groundCover_intercepts"
+    project: "mpg-data-warehouse"
+
