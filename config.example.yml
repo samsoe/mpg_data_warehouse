@@ -99,3 +99,23 @@ gridveg_image_metadata:
     # Optional: Specify project explicitly if needed
     project: "your-project-id"
 
+# CSV Append Configuration
+# Used by: notebooks/append_csv_to_bq.ipynb
+# Generic configuration for appending CSV data to BigQuery tables
+csv_append:
+  gcs:
+    # URL to the CSV file in Google Cloud Storage
+    csv_url: "gs://your-bucket/path/to/data.csv"
+    
+    # Backup location for table backups (optional but recommended)
+    backup_bucket: "your-bucket"
+    backup_prefix: "backups/csv_append"
+  
+  bigquery:
+    # Full table ID for the target table
+    # Format: project.dataset.table
+    table_id: "your-project.your_dataset.your_table"
+    
+    # Optional: Specify project explicitly if needed
+    project: "your-project-id"
+
