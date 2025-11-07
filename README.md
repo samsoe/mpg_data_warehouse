@@ -165,6 +165,62 @@ Appends new gridVeg reference image metadata to BigQuery from a CSV file stored 
 - Data validation and verification
 - Comprehensive summary report with year and direction breakdowns
 
+### Data Quality Notebooks
+
+These notebooks fix data quality issues in BigQuery tables by identifying and removing rows with NULL values in critical fields.
+
+#### Fix NA Rows in gridVeg Additional Species
+
+Identifies and removes rows with NULL values in the `key_plant_species` field from the gridVeg additional species table.
+
+**Location:** `notebooks/fix_gridVeg_additional_species_na_rows.ipynb`
+
+**Operation:** REPLACE entire table (WRITE_TRUNCATE) with cleaned data
+
+**Configuration:**
+- Copy `config.example.yml` to `config.yml` and fill in:
+  - `gridveg_additional_species.bigquery.table_id`: BigQuery table ID for additional species
+  - `gridveg_additional_species.gcs.backup_bucket`: GCS bucket for table backups
+
+**Features:**
+- Investigates current table state and schema
+- Analyzes NULL/NA values across all columns
+- Specifically targets NULL values in `key_plant_species` field
+- Automatic backup of existing table to GCS before modifications
+- Removes rows with NULL `key_plant_species`
+- Replaces table with cleaned dataset
+- Comprehensive verification queries
+- Summary report with before/after statistics
+- Rollback instructions if needed
+
+**Target Field:** `key_plant_species` (required field)
+
+#### Fix NA Rows in gridVeg Point Intercept Ground
+
+Identifies and removes rows with NULL values in the `intercept_ground_code` field from the gridVeg point intercept ground table.
+
+**Location:** `notebooks/fix_gridVeg_point_intercept_na_rows.ipynb`
+
+**Operation:** REPLACE entire table (WRITE_TRUNCATE) with cleaned data
+
+**Configuration:**
+- Copy `config.example.yml` to `config.yml` and fill in:
+  - `gridveg_point_intercepts.bigquery.table_ground`: BigQuery table ID for ground intercept data
+  - `gridveg_point_intercepts.gcs.backup_bucket`: GCS bucket for table backups
+
+**Features:**
+- Investigates current table state and schema
+- Analyzes NULL/NA values across all columns
+- Specifically targets NULL values in `intercept_ground_code` field
+- Automatic backup of existing table to GCS before modifications
+- Removes rows with NULL `intercept_ground_code`
+- Replaces table with cleaned dataset
+- Comprehensive verification queries
+- Summary report with before/after statistics
+- Rollback instructions if needed
+
+**Target Field:** `intercept_ground_code` (required field)
+
 ### Data Wrangling Notebooks
 
 These notebooks pull data FROM BigQuery for analysis, transformation, and processing (as opposed to the update notebooks above which upload data TO BigQuery).
